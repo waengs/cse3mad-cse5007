@@ -1,98 +1,75 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+// index.tsx
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+// ✅ Import themes and type
+import type { Theme } from '../../components/ThemeContext';
+import {
+  blueTheme,
+  darkTheme,
+  lightTheme,
+  yellowTheme,
+} from '../../components/ThemeContext';
 
-export default function HomeScreen() {
+// List of available themes (you can add more)
+const themes: Theme[] = [lightTheme, darkTheme, blueTheme, yellowTheme];
+
+const ThemedApp = () => {
+  const systemScheme = useColorScheme(); // 'light' | 'dark' | null
+  const [themeIndex, setThemeIndex] = useState<number>(0);
+  const [theme, setTheme] = useState<Theme>(lightTheme);
+
+  // 🧠 On first load: match system theme
+  useEffect(() => {
+    if (systemScheme === 'dark') {
+      setTheme(darkTheme);
+      setThemeIndex(1); // darkTheme is at index 1 in the array
+    } else {
+      setTheme(lightTheme);
+      setThemeIndex(0);
+    }
+  }, [systemScheme]);
+
+  // 🔁 Cycle to the next theme manually
+  const cycleTheme = () => {
+    const nextIndex = (themeIndex + 1) % themes.length;
+    setTheme(themes[nextIndex]);
+    setThemeIndex(nextIndex);
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
-
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <Text style={[styles.text, { color: theme.colors.text }]}>
+        Current theme: {theme.mode}
+      </Text>
+      <TouchableOpacity
+        style={[styles.button, { backgroundColor: theme.customColors.buttonBackground }]}
+        onPress={cycleTheme}
+      >
+        <Text style={{ color: theme.customColors.buttonText }}>
+          Switch Theme
+        </Text>
+      </TouchableOpacity>
+    </View>
   );
-}
+};
+
+export default ThemedApp;
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
+  container: {
+    flex: 1,
     alignItems: 'center',
-    gap: 8,
+    justifyContent: 'center',
+    padding: 16,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  text: {
+    fontSize: 20,
+    marginBottom: 16,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  button: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
   },
 });
